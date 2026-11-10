@@ -23,17 +23,10 @@ function whatsappUrl(message: string) {
   return `${WHATSAPP}?text=${encodeURIComponent(message)}`;
 }
 
-function PhotoPlaceholder({ label, large = false }: { label: string; large?: boolean }) {
+function PhotoImage({ src, alt, large = false, logo = false }: { src: string; alt: string; large?: boolean; logo?: boolean }) {
   return (
-    <div className={`photo-placeholder ${large ? 'photo-placeholder-large' : ''}`} role="img" aria-label={`Espaço reservado para fotografia real: ${label}`}>
-      <div className="placeholder-orbit orbit-one" />
-      <div className="placeholder-orbit orbit-two" />
-      <div className="placeholder-content">
-        <span className="camera-icon"><Camera size={large ? 25 : 20} /></span>
-        <strong>Foto oficial da agência</strong>
-        <span>{label}</span>
-        <small>Adicione aqui um registro real da Fácil Viagens</small>
-      </div>
+    <div className={`photo-placeholder photo-image ${large ? 'photo-placeholder-large' : ''} ${logo ? 'photo-image-logo' : ''}`}>
+      <img src={src} alt={alt} loading="lazy" />
     </div>
   );
 }
@@ -57,7 +50,6 @@ function App() {
   const [formSent, setFormSent] = useState(false);
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
 
-  const filteredCategories = activeFilter === 'Todos' ? ['Praia', 'Aventura', 'Família'] : [activeFilter];
 
   const goTo = (href: string) => {
     setMenuOpen(false);
@@ -151,8 +143,7 @@ function App() {
             </div>
             <div className="hero-visual">
               <div className="hero-photo-frame">
-                <PhotoPlaceholder label="Banner principal / viagem em destaque" large />
-                <div className="photo-caption"><span className="caption-dot" /> ACERVO DE VIAGENS FÁCIL</div>
+                <PhotoImage src="/images/logo-facil.jpeg" alt="Logo oficial da Fácil Viagens" large logo />
               </div>
               <div className="hero-stamp"><Compass size={25} /><span>O mundo<br />te espera</span></div>
               <div className="hero-floating-card"><span className="floating-icon"><Heart size={17} /></span><span><strong>Novas histórias</strong><small>começam com uma viagem</small></span></div>
@@ -185,12 +176,17 @@ function App() {
               {categories.map(c=><button key={c} className={`filter-chip ${activeFilter===c?'active':''}`} onClick={()=>setActiveFilter(c)}>{c}</button>)}
             </div>
             <div className="destination-empty-grid">
-              {filteredCategories.slice(0,3).map((c,i)=><article className="destination-placeholder-card" key={c}>
-                <PhotoPlaceholder label={`Fotografia de destino — ${c}`} />
-                <div className="destination-card-copy"><span className="card-index">0{i+1} / ACERVO</span><h3>{c==='Todos'?'Seu próximo destino':c+' pelo mundo'}</h3><p>O destino e a fotografia oficial serão adicionados após confirmação pela agência.</p><a href={whatsappUrl(`Olá! Gostaria de consultar opções de viagem${c!=='Todos'?` do tipo ${c.toLowerCase()}`:''}.`)} target="_blank" rel="noreferrer">Consultar opções <ArrowUpRight size={15}/></a></div>
+              {(activeFilter === 'Todos' ? [
+                { type: 'Praia', title: 'Dias de praia e descanso', image: '/images/familia-praia.jpeg', description: 'Registros reais de momentos especiais à beira-mar.' },
+                { type: 'Internacional', title: 'Orlando e Disney', image: '/images/disney-orlando.jpeg', description: 'Uma viagem em família para viver a magia de Orlando.' },
+                { type: 'Excursão', title: 'Rio de Janeiro', image: '/images/cristo-redentor.jpeg', description: 'Experiências e passeios para conhecer novos lugares.' }
+              ] : [{ type: activeFilter, title: ({ Praia: 'Praias e paisagens', Aventura: 'Passeios e aventura', Família: 'Viagens em família', Romântica: 'Viagens a dois', Internacional: 'Destinos internacionais', Excursão: 'Excursões e grupos', Outros: 'Outras experiências' } as Record<string,string>)[activeFilter] || activeFilter,
+                image: ({ Praia: '/images/familia-praia.jpeg', Aventura: '/images/quadriciclo-praia.jpeg', Família: '/images/familia-guarda-chuvas.jpeg', Romântica: '/images/casal-paisagem.jpeg', Internacional: '/images/disney-orlando.jpeg', Excursão: '/images/cristo-redentor.jpeg', Outros: '/images/familia-passarela.jpeg' } as Record<string,string>)[activeFilter] || '/images/familia-praia.jpeg', description: 'Veja alguns registros reais de viagens e experiências.' }]).map((item,i)=><article className="destination-placeholder-card" key={item.type}>
+                <PhotoImage src={item.image} alt={item.title} />
+                <div className="destination-card-copy"><span className="card-index">0{i+1} / EXPERIÊNCIAS REAIS</span><h3>{item.title}</h3><p>{item.description}</p><a href={whatsappUrl(`Olá! Gostaria de consultar opções de viagem para ${item.title.toLowerCase()}.`)} target="_blank" rel="noreferrer">Consultar opções <ArrowUpRight size={15}/></a></div>
               </article>)}
             </div>
-            <div className="section-footnote"><Camera size={16}/> Os espaços acima aguardam fotografias e destinos confirmados do acervo da Fácil Viagens.</div>
+            <div className="section-footnote"><Camera size={16}/> Fotografias reais de viagens e experiências compartilhadas com a Fácil Viagens.</div>
           </div>
         </section>
 
@@ -205,8 +201,8 @@ function App() {
             </div>
             <div className="package-preview">
               <div className="package-preview-top"><span>CATÁLOGO FÁCIL VIAGENS</span><Ticket size={18}/></div>
-              <PhotoPlaceholder label="Pacote ou excursão em destaque" large />
-              <div className="package-preview-bottom"><div><small>PRÓXIMOS PACOTES</small><strong>Consulte valores</strong></div><span className="package-arrow"><ArrowUpRight size={22}/></span></div>
+              <PhotoImage src="/images/casal-paisagem.jpeg" alt="Casal aproveitando uma paisagem de viagem" large />
+              <div className="package-preview-bottom"><div><small>PRÓXIMOS PACOTES</small><strong>Viagens feitas de boas histórias</strong></div><span className="package-arrow"><ArrowUpRight size={22}/></span></div>
             </div>
           </div>
           <div className="container package-categories">
@@ -216,10 +212,28 @@ function App() {
 
         <section className="section experiences-section" id="experiencias">
           <div className="container">
-            <SectionHeading eyebrow="MOMENTOS QUE FICAM" title="Muito além do destino" description="Viagens são feitas de encontros, descobertas e histórias. Em breve, este espaço vai reunir registros reais das experiências vividas com a agência." />
-            <div className="experience-grid">
-              <div className="experience-main"><PhotoPlaceholder label="Registro real de excursão ou grupo" large /><div className="experience-label"><span>01</span><strong>Viagens em grupo</strong></div></div>
-              <div className="experience-side"><div><PhotoPlaceholder label="Registro real de passeio" /><div className="experience-label"><span>02</span><strong>Passeios e descobertas</strong></div></div><div><PhotoPlaceholder label="Registro real de experiência" /><div className="experience-label"><span>03</span><strong>Momentos especiais</strong></div></div></div>
+            <SectionHeading eyebrow="MOMENTOS QUE FICAM" title="Muito além do destino" description="Viagens são feitas de encontros, descobertas e histórias. Veja alguns registros reais de passeios, famílias e momentos compartilhados com a Fácil Viagens." />
+            <div className="experience-gallery">
+              <article className="experience-card experience-card-feature">
+                <div className="experience-card-photo"><PhotoImage src="/images/quadriciclo-praia.jpeg" alt="Grupo de viajantes aproveitando um passeio de quadriciclo na praia" large /></div>
+                <div className="experience-card-copy"><span className="experience-number">01 · AVENTURA</span><h3>Um dia de aventura à beira-mar</h3><p>Um passeio de quadriciclo com espaço para explorar a paisagem, sentir a brisa e aproveitar o caminho em grupo.</p></div>
+              </article>
+              <article className="experience-card">
+                <div className="experience-card-photo"><PhotoImage src="/images/familia-guarda-chuvas.jpeg" alt="Família reunida em uma passarela decorada com guarda-chuvas coloridos" /></div>
+                <div className="experience-card-copy"><span className="experience-number">02 · PASSEIOS EM FAMÍLIA</span><h3>Cenários que viram lembrança</h3><p>Uma parada para registrar todo mundo junto em um lugar cheio de cor. São esses pequenos momentos que deixam a viagem especial.</p></div>
+              </article>
+              <article className="experience-card">
+                <div className="experience-card-photo"><PhotoImage src="/images/familia-na-praia.jpeg" alt="Família reunida durante um passeio em um destino de praia" /></div>
+                <div className="experience-card-copy"><span className="experience-number">03 · VIAGEM EM GRUPO</span><h3>Todo mundo junto, cada um com sua história</h3><p>Viagens em família e entre gerações, com tempo para conversar, conhecer o destino e criar memórias compartilhadas.</p></div>
+              </article>
+              <article className="experience-card">
+                <div className="experience-card-photo"><PhotoImage src="/images/familia-com-filha.jpeg" alt="Pais caminhando de mãos dadas com a filha em uma praia" /></div>
+                <div className="experience-card-copy"><span className="experience-number">04 · TEMPO DE QUALIDADE</span><h3>Descobrir o mundo lado a lado</h3><p>Uma caminhada à beira-mar em família: momentos simples, sem pressa, que se tornam parte das melhores recordações.</p></div>
+              </article>
+              <article className="experience-card experience-card-couple">
+                <div className="experience-card-photo"><PhotoImage src="/images/casal-paisagem.jpeg" alt="Casal aproveitando junto uma paisagem de viagem" /></div>
+                <div className="experience-card-copy"><span className="experience-number">05 · A DOIS</span><h3>Uma pausa para aproveitar a paisagem</h3><p>Também há espaço para viagens a dois: conhecer novos cenários, aproveitar o passeio e guardar uma lembrança especial.</p></div>
+              </article>
             </div>
             <div className="experience-cta"><span>Tem fotos de uma viagem com a Fácil?</span><a href={whatsappUrl('Olá! Tenho registros de uma viagem com a Fácil Viagens e gostaria de saber como compartilhar.')} target="_blank" rel="noreferrer">Compartilhe com a agência <ArrowUpRight size={15}/></a></div>
           </div>
@@ -243,7 +257,7 @@ function App() {
                 <div className="value-card"><span><Users size={21}/></span><h3>Contato acessível</h3><p>Atendimento presencial, por telefone e WhatsApp.</p></div>
               </div>
             </div>
-            <div className="about-photo"><PhotoPlaceholder label="Fotografia real da equipe ou da agência" large/><div className="about-photo-caption"><span>FÁCIL VIAGENS</span><strong>De Sousa para novos destinos.</strong></div></div>
+            <div className="about-photo"><PhotoImage src="/images/fachada-agencia.jpeg" alt="Fachada real da agência Fácil Viagens em Sousa" large /><div className="about-photo-caption"><span>FÁCIL VIAGENS</span><strong>Estamos em Sousa. Venha nos visitar.</strong></div></div>
           </div>
         </section>
 
